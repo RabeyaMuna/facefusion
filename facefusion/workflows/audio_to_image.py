@@ -13,7 +13,7 @@ from facefusion.processors.core import get_processors_modules
 from facefusion.temp_helper import clear_temp_directory, get_temp_file_path, get_temp_frame_sequence_paths
 from facefusion.time_helper import calculate_end_time
 from facefusion.types import ErrorCode
-from facefusion.vision import detect_image_resolution, pack_resolution, restrict_image_resolution, scale_resolution
+from facefusion.vision import detect_image_resolution, pack_resolution, read_static_image, restrict_image_resolution, scale_resolution, write_image
 from facefusion.workflows.core import conditional_process_temp_frame, is_process_stopping, prepare_temp
 
 
@@ -69,6 +69,16 @@ def process_frames() -> ErrorCode:
 	temp_frame_paths = get_temp_frame_sequence_paths(state_manager.get_item('target_path'), audio_frame_total, '%08d')
 
 	if temp_frame_paths:
+		temp_image_path = get_temp_file_path(state_manager.get_item('target_path'))
+		temp_vision_frame = read_static_image(temp_image_path, 'rgba')
+
+		if temp_vision_frame is None:
+			logger.error(translator.get('copying_image_failed'), __name__)
+			process_manager.end()
+			return 1
+
+		for temp_frame_path in temp_frame_paths:
+			write_image(temp_frame_path, temp_vision_frame)
 		with tqdm(total = len(temp_frame_paths), desc = translator.get('processing'), unit = 'frame', ascii = ' =', disable = state_manager.get_item('log_level') in [ 'warn', 'error' ]) as progress:
 			progress.set_postfix(execution_providers = state_manager.get_item('execution_providers'))
 
