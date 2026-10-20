@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 
@@ -16,7 +17,10 @@ def before_all() -> None:
 		'https://github.com/facefusion/facefusion-assets/releases/download/examples-3.0.0/source.mp3',
 		'https://github.com/facefusion/facefusion-assets/releases/download/examples-3.0.0/target-240p.mp4'
 	])
-	subprocess.run([ 'ffmpeg', '-i', get_test_example_file('target-240p.mp4'), '-vframes', '1', get_test_example_file('target-240p.jpg') ])
+	target_jpg = get_test_example_file('target-240p.jpg')
+	if os.path.exists(target_jpg):
+		os.remove(target_jpg)
+	subprocess.run([ 'ffmpeg', '-i', get_test_example_file('target-240p.mp4'), '-vframes', '1', target_jpg ], check=False)
 
 
 @pytest.fixture(scope = 'function', autouse = True)
@@ -29,7 +33,12 @@ def before_each() -> None:
 def test_sync_lip_to_image() -> None:
 	commands = [ sys.executable, 'facefusion.py', 'run', '--jobs-path', get_test_jobs_directory(), '--processors', 'lip_syncer', '-s', get_test_example_file('source.mp3'), '-t', get_test_example_file('target-240p.jpg'), '-o', get_test_output_file('test_sync_lip_to_image.jpg') ]
 
-	assert subprocess.run(commands).returncode == 0
+	result = subprocess.run(commands, capture_output=True, text=True)
+	if result.returncode != 0:
+		print(f"Command failed with return code {result.returncode}")
+		print(f"stdout: {result.stdout}")
+		print(f"stderr: {result.stderr}")
+	assert result.returncode == 0
 	assert is_test_output_file('test_sync_lip_to_image.jpg') is True
 
 

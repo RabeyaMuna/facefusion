@@ -85,7 +85,11 @@ def process_frames() -> ErrorCode:
 							__future__.cancel()
 
 					if not future.cancelled():
-						future.result()
+						try:
+							future.result()
+						except Exception as e:
+							logger.error(f"Error processing frame: {e}", __name__)
+							return 1
 						progress.update()
 
 		for processor_module in get_processors_modules(state_manager.get_item('processors')):
