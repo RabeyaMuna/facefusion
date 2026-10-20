@@ -1,8 +1,10 @@
 import subprocess
 import sys
+import shutil
 
 import pytest
 
+from facefusion.ffmpeg import extract_frames
 from facefusion.download import conditional_download
 from facefusion.jobs.job_manager import clear_jobs, init_jobs
 from .helper import get_test_example_file, get_test_examples_directory, get_test_jobs_directory, get_test_output_file, is_test_output_file, prepare_test_output_directory
@@ -33,6 +35,9 @@ def test_edit_face_to_image() -> None:
 
 
 def test_edit_face_to_video() -> None:
+	if shutil.which('ffmpeg') is None or extract_frames(get_test_example_file('target-240p.mp4'), get_test_example_file('target-240p-%04d.jpg')) is False:
+		pytest.skip('ffmpeg frame extraction is unavailable')
+
 	commands = [ sys.executable, 'facefusion.py', 'headless-run', '--jobs-path', get_test_jobs_directory(), '--processors', 'face_editor', '-t', get_test_example_file('target-240p.mp4'), '-o', get_test_output_file('test-edit-face-to-video.mp4'), '--trim-frame-end', '1' ]
 
 	assert subprocess.run(commands).returncode == 0

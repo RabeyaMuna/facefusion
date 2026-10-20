@@ -28,7 +28,8 @@ def before_each() -> None:
 def test_enhance_face_to_image() -> None:
 	commands = [ sys.executable, 'facefusion.py', 'headless-run', '--jobs-path', get_test_jobs_directory(), '--processors', 'face_enhancer', '-t', get_test_example_file('target-240p.jpg'), '-o', get_test_output_file('test-enhance-face-to-image.jpg') ]
 
-	assert subprocess.run(commands).returncode == 0
+	result = subprocess.run(commands, capture_output=True, text=True)
+	assert result.returncode == 0, f"Command failed with exit code {result.returncode}. stderr: {result.stderr}"
 	assert is_test_output_file('test-enhance-face-to-image.jpg') is True
 
 
