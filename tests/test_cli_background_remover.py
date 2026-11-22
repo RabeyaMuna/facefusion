@@ -35,5 +35,6 @@ def test_remove_background_to_image() -> None:
 def test_remove_background_to_video() -> None:
 	commands = [ sys.executable, 'facefusion.py', 'run', '--jobs-path', get_test_jobs_directory(), '--processors', 'background_remover', '-t', get_test_example_file('target-240p.mp4'), '-o', get_test_output_file('test-remove-background-to-video.mp4'), '--trim-frame-end', '1' ]
 
-	assert subprocess.run(commands).returncode == 0
+	result = subprocess.run(commands)
+	assert result.returncode == 0
 	assert is_test_output_file('test-remove-background-to-video.mp4') is True

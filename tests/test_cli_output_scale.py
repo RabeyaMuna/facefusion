@@ -53,5 +53,10 @@ def test_output_video_scale(output_video_scale : Scale, output_video_resolution 
 	output_file_path = get_test_output_file('test-output-video-scale-' + str(output_video_scale) + '.mp4')
 	commands = [ sys.executable, 'facefusion.py', 'run', '--jobs-path', get_test_jobs_directory(), '--processors', 'frame_enhancer', '-t', get_test_example_file('target-240p.mp4'), '-o', output_file_path, '--trim-frame-end', '1', '--output-video-scale', str(output_video_scale) ]
 
-	assert subprocess.run(commands).returncode == 0
+	result = subprocess.run(commands)
+	if result.returncode != 0:
+		print(f"Command failed with return code {result.returncode}")
+		print(f"Command output: {result.stdout}")
+		print(f"Command error: {result.stderr}")
+	assert result.returncode == 0
 	assert detect_video_resolution(output_file_path) == output_video_resolution
